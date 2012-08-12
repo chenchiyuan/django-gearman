@@ -1,5 +1,6 @@
 *.pyc
 manager/data
+!manager/data/__init__.py
 .idea
 manager/spiders/spiders/spiders/*.py
 !manager/spiders/spiders/spiders/__init__.py
