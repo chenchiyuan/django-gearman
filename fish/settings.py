@@ -1,7 +1,18 @@
-# Django settings for fish project.
+import os
+
+PROJECT_HOME = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../')
+TMP_DIR = '/tmp/'
+DATA_DIR = os.path.join(PROJECT_HOME, 'manager', 'data')
+TEMPLATE_DIR = os.path.join(PROJECT_HOME, 'manager', 'templates')
+SPIDER_HOME = os.path.join(PROJECT_HOME, 'manager', 'spiders')
+SPIDER_EXE_HOME = os.path.join(SPIDER_HOME, 'spiders', 'spiders')
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+
+#Gearman Server
+GEARMAN_HOST = '192.168.1.26'
+GEARMAN_PORT = 4730
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
@@ -11,15 +22,15 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': '',                      # Or path to database file if using sqlite3.
+        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'task.db',                      # Or path to database file if using sqlite3.
         'USER': '',                      # Not used with sqlite3.
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
     }
 }
-
+  
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
@@ -27,24 +38,24 @@ DATABASES = {
 # timezone as the operating system.
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
-TIME_ZONE = 'America/Chicago'
+TIME_ZONE = 'Asia/Shanghai'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'zh-cn'
 
 SITE_ID = 1
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
-USE_I18N = True
+USE_I18N = False
 
 # If you set this to False, Django will not format dates, numbers and
 # calendars according to the current locale.
-USE_L10N = True
+USE_L10N = False
 
 # If you set this to False, Django will not use timezone-aware datetimes.
-USE_TZ = True
+USE_TZ = False
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
@@ -118,37 +129,39 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Uncomment the next line to enable the admin:
-    # 'django.contrib.admin',
-    # Uncomment the next line to enable admin documentation:
-    # 'django.contrib.admindocs',
+    'django.contrib.admin',
+    'django.contrib.admindocs',
+    'manager'
 )
 
-# A sample logging configuration. The only tangible logging
-# performed by this configuration is to send an email to
-# the site admins on every HTTP 500 error when DEBUG=False.
-# See http://docs.djangoproject.com/en/dev/topics/logging for
-# more details on how to customize your logging configuration.
+#LOGGER
+MY_LOG_FILENAME = os.path.join(PROJECT_HOME, 'manager', 'logs', 'fish.log')
+
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
+  'version': 1,
+  'formatters': {
+    'verbose': {
+      'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
     },
-    'handlers': {
-        'mail_admins': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler'
-        }
+      'simple': {
+      'format': '%(levelname)s %(asctime)s %(module)s %(message)s'
     },
-    'loggers': {
-        'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
+  },
+  'handlers': {
+    'rotating_file':{
+      'level' : 'INFO',
+        'formatter' : 'simple', # from the django doc example
+        'class' : 'logging.handlers.TimedRotatingFileHandler',
+        'filename' :   MY_LOG_FILENAME, # full path works
+        'when' : 'midnight',
+        'interval' : 1,
+        'backupCount' : 7,
+    },
+  },
+  'loggers': {
+    'default': {
+    'handlers': ['rotating_file'],
+    'level': 'INFO',
+      }
     }
 }

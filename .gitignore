@@ -1,0 +1,5 @@
+*.pyc
+manager/data
+.idea
+manager/spiders/spiders/spiders/*.py
+*.idea
