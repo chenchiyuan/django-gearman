@@ -15,6 +15,10 @@ class Admin(GearmanAdminClient):
     self.host_list = host_list
 
   def get_status(self):
+    """
+    获取queue server的状态
+    @return {}
+    """
     return super(Admin, self).get_status()
 
   def get_workers(self):
@@ -27,6 +31,10 @@ class Admin(GearmanAdminClient):
     return super(Admin, self).ping_server()
 
   def empty_task(self, task):
+    """
+    清空某任务，采用lazy的方式。
+    使用一个什么都不干的worker收拾任务。
+    """
     def callback(worker, job):
       return json.dumps({'a': 'a'})
 
@@ -35,9 +43,15 @@ class Admin(GearmanAdminClient):
     worker.safely_work()
 
   def start_server(self, port=4730):
+    """
+    开启任务，调用gearmand -d 命令，指定在本地的某port
+    """
     os.system('gearmand -d -L 0.0.0.0 -p %s' %str(port))
     print("Job Server Start at port %s" %str(port))
 
   def send_shutdown(self, graceful=True):
+    """
+    shut downserver, 但是不是实时关闭。
+    """
     print("Job Server will shutdown")
     return super(Admin, self).send_shutdown(graceful)
