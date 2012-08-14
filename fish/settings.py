@@ -14,6 +14,11 @@ TEMPLATE_DEBUG = DEBUG
 GEARMAN_HOST = '192.168.1.26'
 GEARMAN_PORT = 4730
 
+#REDIS
+REDIS_HOST = '127.0.0.1'
+REDIS_PORT = 6379
+REDIS_DB = 0
+
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
