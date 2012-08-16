@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 
 sorted_list = lambda *args: '_'.join(sorted(args))
 threshold = 0.06
-BASE_FILE = '/tmp/gearman_data/mafengwo/'
-DATA_DIR = 'manager/data/'
+BASE_FILE = '/home/toureet/web_data/gearman/mafengwo/'
+DATA_DIR = 'tasks/data/'
 
 def cache_key(prefix, items):
   if isinstance(items, basestring):
@@ -42,8 +42,8 @@ class TrainTagTask(BaseTask):
     for root, dirs, files in os.walk(BASE_FILE):
       for file in files:
         names.append(file)
-        
-    burst = 300
+
+    burst = 2
 
     iters = [{'names': names[i: i+burst]} if (i+burst) < len(names)
              else {'names': names[i: -1]} for i in range(0, len(names), burst)]
@@ -73,7 +73,8 @@ class TrainTagTask(BaseTask):
     for name in names:
       try:
         self.train(path(name))
-      except Exception:
+      except Exception, err:
+        print(err)
         continue
 
     return json.dumps({'success' : 'Success'})
@@ -151,7 +152,8 @@ class TrainTagTask(BaseTask):
       cache.zincrby(name=key_max, value=min, amount=value)
 
   def output(self):
-    TAG_RATE = os.path.join(DATA_DIR, 'rate.dic')
+    self._tag_rate()
+    self._tag_relations(prefix=TRAIN_RELATION_PREFIX)
 
   def _tag_rate(self):
     import math
@@ -179,7 +181,19 @@ class TrainTagTask(BaseTask):
     for key in keys:
       items = cache.zrevrangebyscore(name=key, min='-inf', max='+inf', withscores=True)
       name = key[len(prefix):]
-      values = ','.join([tag.decode('utf-8')+ '__' + str(value).decode('utf-8') for tag, value in items])
+      total = 0
+
+      for tag, value in items:
+        score = cache.get(name=cache_key(TRAIN_TAG_PREFIX, tag.decode('utf-8')))
+        total += value/ float(score)
+
+      objs = []
+      for tag, value in items:
+        score = cache.get(name=cache_key(TRAIN_TAG_PREFIX, tag.decode('utf-8')))
+        percentage = value/float(score)/total
+        objs.append('%s__%.4f' %(tag.decode('utf-8'), percentage))
+
+      values = ','.join(objs)
       line = '%s\t%s\n' %(name.decode('utf-8'), values)
       file.write(line.encode('utf-8'))
 
