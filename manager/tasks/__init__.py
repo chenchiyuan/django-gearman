@@ -3,6 +3,5 @@
 
 from __future__ import division, unicode_literals, print_function
 from base import BaseTask
-from mafengwo import MafengwoSpiderTask
 
-__all__ = [BaseTask, MafengwoSpiderTask, ]
+__all__ = [BaseTask]

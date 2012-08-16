@@ -21,8 +21,14 @@ class BaseTask(object):
     """
     manager实际调用的函数,有简单的数据类型处理。
     """
+
     json_data = json.loads(job.data)
-    return json.dumps(self.on_callback(json_data))
+    result = json.dumps(self.on_callback(json_data))
+
+    if json_data.has_key('SHUTDOWN'):
+      result.update({'SHUTDOWN': True})
+
+    return result
 
   def on_callback(self, json_data):
     """

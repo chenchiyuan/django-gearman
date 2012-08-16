@@ -1,0 +1,22 @@
+INFO 2012-08-16 15:01:20,194 models Dispatch a task name mafengwo, {u'SHUTDOWN': True}
+ERROR 2012-08-16 15:01:20,195 mafengwo u'start'
+ERROR 2012-08-16 15:01:20,586 mafengwo u'start'
+INFO 2012-08-16 15:01:20,586 models Dispatch a task name mafengwo, {u'SHUTDOWN': True}
+INFO 2012-08-16 15:09:56,155 models Will handle task mafengwo, num 2
+INFO 2012-08-16 15:09:56,156 models Will send task mafengwo, num 2
+INFO 2012-08-16 15:09:56,156 clients Send jobs task num 2
+INFO 2012-08-16 15:10:37,619 models Will handle task mafengwo, num 2
+INFO 2012-08-16 15:10:37,619 models Will send task mafengwo, num 2
+INFO 2012-08-16 15:10:37,620 clients Send jobs task num 2
+INFO 2012-08-16 15:10:59,627 models Will handle task mafengwo, num 2
+INFO 2012-08-16 15:10:59,627 models Will send task mafengwo, num 2
+INFO 2012-08-16 15:10:59,627 clients Send jobs task num 2
+INFO 2012-08-16 15:16:43,907 models Will handle task mafengwo, num 2
+INFO 2012-08-16 15:16:43,908 models Will send task mafengwo, num 2
+INFO 2012-08-16 15:16:43,908 clients Send jobs task num 2
+INFO 2012-08-16 15:17:02,243 models Will handle task mafengwo, num 2
+INFO 2012-08-16 15:17:02,244 models Will send task mafengwo, num 2
+INFO 2012-08-16 15:17:02,245 clients Send jobs task num 2
+INFO 2012-08-16 15:17:21,667 models Will handle task mafengwo, num 6
+INFO 2012-08-16 15:17:21,668 models Will send task mafengwo, num 6
+INFO 2012-08-16 15:17:21,669 clients Send jobs task num 6

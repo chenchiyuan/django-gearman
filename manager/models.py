@@ -6,8 +6,8 @@ from distribute.clients import Client
 from distribute.admin import Admin
 from distribute.workers import Worker, ThreadWorker
 from utils import get_gearman_host
+from tasks import BaseTask
 
-import tasks
 import json
 import logging
 
@@ -48,7 +48,7 @@ class Manager(models.Model):
   class Meta:
     verbose_name = verbose_name_plural = u'任务管理器'
 
-  HANDLE_CHOICES = tuple([(obj.__name__, obj.__name__) for obj in tasks.__all__])
+  HANDLE_CHOICES = tuple([(obj.__name__, obj.__name__) for obj in BaseTask.__subclasses__()])
 
   name = models.CharField(verbose_name=u'名字', max_length=36, unique=True)
   description = models.CharField(verbose_name=u'描述', max_length=512, default='', blank=True)
@@ -60,6 +60,16 @@ class Manager(models.Model):
   def __unicode__(self):
     return u'%s %s' %(self.name, self.description)
 
+  def get_handle(self, *args, **kwargs):
+    handle_list = BaseTask.__subclasses__()
+    handle = None
+    
+    for sub in handle_list:
+      if self.task_handle == sub.__name__:
+        handle = sub
+        break
+    return handle(*args, **kwargs)
+
   def dispatch(self, create=False, *args, **kwargs):
     """任务分发
     必须满足分发任务所需要的参数。任务管理者自己应该清楚。
@@ -69,7 +79,7 @@ class Manager(models.Model):
       logger.error("Must test manager %s" %self.name)
       return
     
-    handle = getattr(tasks, self.task_handle)(*args, **kwargs)
+    handle = self.get_handle(*args, **kwargs)
     data_list = handle.map()
 
     logger.info("Will handle task %s, num %d" %(self.name, len(data_list)))
@@ -86,32 +96,39 @@ class Manager(models.Model):
   def address(self):
     return [self.server_address]
 
-  def send_task(self, json_data):
+  def send_task(self, json_data, priority=PRIORITY_NONE):
     job = Job.create(name=self.name, data=json_data, manager=self)
     if not job:
       return
 
     client = self.get_client()
-    client.send_job(name=str(job.name), data=json.dumps(json_data), wait_until_complete=False)
+    client.send_job(name=str(job.name), data=json.dumps(json_data),
+                    wait_until_complete=False, priority=priority)
     logger.info("Dispatch a task name %s, %r" %(job.name, json_data))
 
   def get_worker(self, host_list=get_gearman_host(), *args, **kwargs):
-    handle = getattr(tasks, self.task_handle)(*args, **kwargs)()
+    handle = self.get_handle(*args, **kwargs)
     worker = Worker(host_list)
     worker.register_task(str(self.name), handle.callback)
     return worker
 
-  def build_workers(self, workers=3, **kwargs):
+  def build_workers(self, workers=3, *args, **kwargs):
     assert self.tested == True
-    handle = getattr(tasks, self.task_handle)(**kwargs)
+    handle = self.get_handle(*args, **kwargs)
     for i in range(workers):
       t = ThreadWorker(task=str(self.name), callback=handle.callback)
       t.start()
 
-  def clear_worker(self):
-    self.send_task({'quit': True})
+  def clear_worker(self, priority='high'):
+    p = {
+      'high': PRIORITY_HIGH,
+      'normal': PRIORITY_NONE,
+      'low': PRIORITY_LOW
+    }
 
-  def clear_workers(self):
+    self.send_task({'SHUTDOWN': True}, p.get(priority, PRIORITY_NONE))
+
+  def clear_workers(self, priority='high'):
     admin = Admin()
     current_status = admin.get_status()
     num = 0
@@ -120,9 +137,8 @@ class Manager(models.Model):
       if status['task'] == self.name:
         num = int(status['workers'])
 
-    print(num)
     for i in range(num):
-      self.clear_worker()
+      self.clear_worker(priority=priority)
 
   def get_admin(self):
     """
@@ -144,7 +160,7 @@ class Manager(models.Model):
     2. worker关闭可能出现的问题。
 
     """
-    handle = getattr(tasks, self.task_handle)(*args, **kwargs)
+    handle = self.get_handle(*args, **kwargs)
     mapped_data = handle.map()
     
     assert 0 < len(mapped_data) < 1000
@@ -188,7 +204,8 @@ class Job(models.Model):
     job = cls(name=name, data=data, manager=manager, *args, **kwargs)
     try:
       job.save()
-    except Exception as err:
-      print(err)
+    except Exception, err:
+      logger.err(err)
       return None
-    return job
+    else:
+      return job

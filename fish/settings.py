@@ -1,10 +1,10 @@
 import os
 
 PROJECT_HOME = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../')
-TMP_DIR = '/tmp/'
-DATA_DIR = os.path.join(PROJECT_HOME, 'manager', 'data')
-TEMPLATE_DIR = os.path.join(PROJECT_HOME, 'manager', 'templates')
-SPIDER_HOME = os.path.join(PROJECT_HOME, 'manager', 'spiders')
+TMP_DIR = '/home/toureet/web_data/gearman/'
+DATA_DIR = os.path.join(PROJECT_HOME, 'tasks', 'data')
+TEMPLATE_DIR = os.path.join(PROJECT_HOME, 'tasks', 'templates')
+SPIDER_HOME = os.path.join(PROJECT_HOME, 'tasks', 'spiders')
 SPIDER_EXE_HOME = os.path.join(SPIDER_HOME, 'spiders', 'spiders')
 
 DEBUG = True
@@ -136,7 +136,8 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'django.contrib.admindocs',
-    'manager'
+    'manager',
+    'tasks'
 )
 
 #LOGGER
@@ -164,7 +165,7 @@ LOGGING = {
     },
   },
   'loggers': {
-    'default': {
+    '': {
     'handlers': ['rotating_file'],
     'level': 'INFO',
       }

@@ -1,8 +1,9 @@
 *.pyc
-manager/data
-!manager/data/__init__.py
+tasks/data
+!task/data/__init__.py
 .idea
-manager/spiders/spiders/spiders/*.py
-!manager/spiders/spiders/spiders/__init__.py
+tasks/spiders/spiders/spiders/*.py
+!tasks/spiders/spiders/spiders/__init__.py
 *.idea
 build
+manager/logs
