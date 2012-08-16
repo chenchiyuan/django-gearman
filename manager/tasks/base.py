@@ -2,14 +2,22 @@
 # __author__ = chenchiyuan
 
 from __future__ import division, unicode_literals, print_function
+from django.conf import settings
 
 import uuid
 import json
+import requests
 
 class BaseTask(object):
   """Base Task
-  关键函数：1. map 2. on_callback
-  """
+    关键函数：1. map 2. on_callback
+    """
+
+  @property
+  def post_url(self):
+    return 'http://' + settings.HOST + ':' + settings.REMOTE_PORT\
+           + '/tasks/' + self.__class__.__name__ + '/'
+
   def map(self):
     """ 将数据分片
     返回数据是将原有数据分片后的list
@@ -50,8 +58,11 @@ class BaseTask(object):
         json_data['unique'] = str(uuid.uuid1())
       self.on_callback(json_data)
 
+  def post(self, **kwargs):
+    return requests.post(url=self.post_url, data=kwargs)
+
   def on_success(self):
     pass
 
-  def reduce(self):
+  def reduce(self, **kwargs):
     pass

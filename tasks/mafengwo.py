@@ -32,9 +32,16 @@ class MafengwoSpiderTask(BaseTask):
 
     try:
       result = self.on_callback(json_data)
-    except Exception as err:
-      logger.error(err)
+    except Exception, err:
+      logger.info(err)
       result = {'success': 'success'}
+
+#    try:
+#      r = self.post(**json.loads(result))
+#    except Exception, err:
+#      r = err
+#    finally:
+#      logger.info(r)
 
     return json.dumps(result)
 
@@ -63,3 +70,7 @@ class MafengwoSpiderTask(BaseTask):
     command_1 = 'cd %s' %settings.SPIDER_HOME
     command_2 = 'scrapy crawl mafengwo_%s' %unique
     os.system('%s && %s' %(command_1, command_2))
+
+  def reduce(self, **kwargs):
+    print(kwargs)
+    

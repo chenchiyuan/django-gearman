@@ -27,7 +27,7 @@ class Worker(GearmanWorker):
     return super(Worker, self).on_job_exception(current_job, exc_info)
 
   def on_job_complete(self, current_job, job_result):
-    print("On Complete")
+    print("Current_job %r complete" %current_job)
     json_data = json.loads(job_result)
     if isinstance(json_data, dict) and json_data.has_key('SHUTDOWN'):
       self.continue_work = WILL_SHUT_DOWN
