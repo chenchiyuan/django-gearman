@@ -74,7 +74,7 @@ class TrainTagTask(BaseTask):
       try:
         self.train(path(name))
       except Exception, err:
-        print(err)
+        print("In Train", err)
         continue
 
     return json.dumps({'success' : 'Success'})
@@ -89,7 +89,6 @@ class TrainTagTask(BaseTask):
     print(','.join(tags.keys()))
     self._train_rate(tags)
     self._train_total(tags)
-    self._train_relations_all(tags)
     self._train_relations(tags)
     print("Done")
 
@@ -152,8 +151,18 @@ class TrainTagTask(BaseTask):
       cache.zincrby(name=key_max, value=min, amount=value)
 
   def output(self):
+    import math
+
+    def sqrt(a):
+      return math.sqrt(float(a))
+
+    def log(a):
+      return math.log(float(a*10))
+    
     self._tag_rate()
     self._tag_relations(prefix=TRAIN_RELATION_PREFIX)
+    self._tag_relations(prefix=TRAIN_RELATION_PREFIX, func=sqrt)
+    self._tag_relations(prefix=TRAIN_RELATION_PREFIX, func=log)
 
   def _tag_rate(self):
     import math
@@ -173,9 +182,16 @@ class TrainTagTask(BaseTask):
 
     file.close()
 
-  def _tag_relations(self, prefix):
+  def _tag_relations(self, prefix, func=None):
+    def default(a):
+      return a
+    
+    if not func:
+      func = default
+
     keys = cache.keys('%s*' %prefix)
-    file_path = os.path.join(DATA_DIR, '%s.dic' %prefix.replace(':', '_').lower())
+    file_path = os.path.join(DATA_DIR, '%s_%s.dic'
+                %(prefix.replace(':', '_').lower(), func.__name__))
 
     file = open(file_path, 'w')
     for key in keys:
@@ -185,15 +201,21 @@ class TrainTagTask(BaseTask):
 
       for tag, value in items:
         score = cache.get(name=cache_key(TRAIN_TAG_PREFIX, tag.decode('utf-8')))
-        total += value/ float(score)
+        total += value/ float(func(score))
 
       objs = []
       for tag, value in items:
         score = cache.get(name=cache_key(TRAIN_TAG_PREFIX, tag.decode('utf-8')))
-        percentage = value/float(score)/total
-        objs.append('%s__%.4f' %(tag.decode('utf-8'), percentage))
+        percentage = value/float(func(score))/total
+        objs.append((tag, percentage))
 
-      values = ','.join(objs)
+      def cmp(a, b):
+        return int(a[1]*1000) - int(b[1]*1000)
+
+      objs = sorted(objs, cmp=cmp, reverse=True)
+
+      values = ','.join(['%s__%.4f'%(obj[0].decode('utf-8'), obj[1]) for obj in objs])
+
       line = '%s\t%s\n' %(name.decode('utf-8'), values)
       file.write(line.encode('utf-8'))
 

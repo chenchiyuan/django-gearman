@@ -1,6 +1,6 @@
 django
 gearman
 scrapy
-ribida
+-e git+git://github.com/chenchiyuan/ribida.git#egg=ribida
 requests
 

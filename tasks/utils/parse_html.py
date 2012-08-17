@@ -19,4 +19,4 @@ def parse_content(dom, file_name, **kwargs):
     show = tags_all.get('show', {})
     hide = tags_all.get('hide', {})
     show.update(hide)
-    return show 
+    return show
